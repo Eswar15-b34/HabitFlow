@@ -45,7 +45,28 @@
   margin-top: 0 !important;
 }
 
+/* Notebook & Workout Tracker Styles */
+.nbCard{background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:20px;box-shadow:var(--shadow);margin-bottom:16px;transition:transform 0.15s ease,box-shadow 0.15s ease}
+.nbCard:hover{box-shadow:0 14px 40px rgba(25,28,45,.1)}
+.nbHead{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;gap:10px;flex-wrap:wrap}
+.nbDateTag{font-weight:850;font-size:16px;color:var(--ink);display:flex;align-items:center;gap:8px}
+.nbMoodBadge{background:#f0efff;color:#5147d7;padding:4px 10px;border-radius:20px;font-size:12px;font-weight:700;display:inline-flex;align-items:center;gap:4px}
+.nbWeightBadge{background:#eefdf5;color:#157b51;border:1px solid #c6f3d9;padding:4px 10px;border-radius:20px;font-size:12px;font-weight:700}
+.nbTitleText{font-size:16px;font-weight:800;margin:6px 0 10px;color:var(--ink)}
+.nbJournalText{font-size:13px;line-height:1.6;color:#374151;white-space:pre-wrap;background:#fafbfc;padding:12px 14px;border-radius:10px;border-left:3px solid var(--brand);margin-bottom:14px}
+.nbWorkoutSection{margin-top:14px;padding-top:12px;border-top:1px dashed var(--line)}
+.nbWorkoutTitle{font-size:12px;font-weight:800;text-transform:uppercase;letter-spacing:.05em;color:var(--muted);margin-bottom:10px;display:flex;align-items:center;gap:6px}
+.nbWorkoutGrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:10px}
+.workoutChip{background:#fff;border:1px solid var(--line);border-radius:10px;padding:11px 13px;box-shadow:0 2px 6px rgba(0,0,0,.02)}
+.workoutChipHead{display:flex;justify-content:space-between;align-items:center;font-weight:800;font-size:13px;margin-bottom:4px}
+.workoutChipSub{font-size:12px;color:var(--muted)}
+.prBadge{display:inline-flex;align-items:center;gap:3px;background:linear-gradient(135deg,#fff8e6,#fff0c2);color:#b47d00;border:1px solid #ffe399;font-weight:900;font-size:10px;padding:2px 7px;border-radius:12px}
+.workoutRowInput{display:grid;grid-template-columns:2fr 1.2fr 1fr 1fr 1fr 2fr 32px;gap:8px;align-items:center;background:#fff;padding:8px 10px;border-radius:10px;border:1px solid var(--line)}
+.workoutRowInput input,.workoutRowInput select{padding:6px 8px;font-size:12px}
+@media(max-width:850px){.workoutRowInput{grid-template-columns:1fr 1fr;gap:6px}}
+
 .authOnly .app{display:none}.authScreen{min-height:100vh;display:grid;place-items:center;padding:24px;background:radial-gradient(circle at top right,#eeeaff 0,#f7f8fc 42%,#f7f8fc 100%)}.authCard{width:min(460px,100%);background:#fff;border:1px solid var(--line);border-radius:22px;box-shadow:0 25px 80px rgba(25,28,45,.12);padding:30px}.authBrand{display:flex;align-items:center;gap:10px;font-weight:900;font-size:24px;margin-bottom:8px}.authBrand i{width:15px;height:15px;border-radius:5px;background:linear-gradient(135deg,#8e83ff,#5a4cf0);box-shadow:0 0 18px #6657f588}.authTitle{font-size:27px;font-weight:850;margin:20px 0 6px}.authSub{color:var(--muted);font-size:13px;line-height:1.5;margin-bottom:22px}.authTabs{display:grid;grid-template-columns:1fr 1fr;background:#f3f4f8;border-radius:11px;padding:4px;margin-bottom:18px}.authTabs button{border:0;background:transparent;border-radius:8px;padding:9px;font-weight:800;color:var(--muted)}.authTabs button.active{background:#fff;color:var(--ink);box-shadow:0 2px 8px #0000000c}.authMsg{display:none;padding:10px 12px;border-radius:10px;font-size:12px;margin-bottom:12px}.authMsg.show{display:block}.authMsg.error{background:#fff0f1;color:#b63b4a}.authMsg.ok{background:#ecf9f2;color:#157b51}.authFooter{margin-top:15px;color:var(--muted);font-size:11px;line-height:1.5}.accountBox{margin-top:auto;padding:12px;background:#1b1e27;border:1px solid #2a2e39;border-radius:12px}.accountEmail{font-size:11px;color:#dfe2ea;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-bottom:9px}.accountActions{display:flex;gap:7px}.accountActions button{flex:1;padding:8px;border:0;border-radius:8px;font-weight:800;font-size:11px}.accountActions .logout{background:#2a2e39;color:#fff}.accountActions .sync{background:#6657f5;color:#fff}.cloudDot{display:inline-block;width:7px;height:7px;border-radius:50%;background:#19a974;margin-right:5px}.hidden{display:none!important}@media(max-width:700px){.authCard{padding:24px}.accountBox{display:none}}
+
 </style>
 <script src="supabase-config.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -66,16 +87,73 @@
   </div>
 </div>
 <div class="app">
-<aside class="side"><div class="logo"><i></i>HabitFlow</div><nav class="nav" id="nav"><button data-view="today" class="active">Today</button><button data-view="week">Week</button><button data-view="month">Month</button><button data-view="habits">Habits</button><button data-view="tasks">Tasks</button><button data-view="history">History</button><button data-view="tracker">📋 Tracker</button></nav><div class="sideActions"><button class="btn primary" id="sideHabit">+ Add habit</button><button class="btn secondary" id="sideTask">+ Add task</button></div><div class="accountBox"><div class="accountEmail" id="userEmail">Not signed in</div><div class="accountActions"><button class="sync" id="syncNow">↻ Sync</button><button class="logout" id="logoutBtn">Logout</button></div></div></aside>
+<aside class="side"><div class="logo"><i></i>HabitFlow</div><nav class="nav" id="nav"><button data-view="today" class="active">Today</button><button data-view="week">Week</button><button data-view="month">Month</button><button data-view="habits">Habits</button><button data-view="tasks">Tasks</button><button data-view="history">History</button><button data-view="tracker">📋 Tracker</button><button data-view="notebook">📖 Notebook</button></nav><div class="sideActions"><button class="btn primary" id="sideHabit">+ Add habit</button><button class="btn secondary" id="sideTask">+ Add task</button><button class="btn secondary" style="background:#eef0ff;color:#5143dc" id="sideNotebook">📖 + Log Entry</button></div><div class="accountBox"><div class="accountEmail" id="userEmail">Not signed in</div><div class="accountActions"><button class="sync" id="syncNow">↻ Sync</button><button class="logout" id="logoutBtn">Logout</button></div></div></aside>
 <main class="main"><header class="top"><div><div class="eyebrow" id="dateLabel"></div><div class="title" id="pageTitle">Today</div></div><div class="topRight"><button class="btn ghost" id="export">Export data</button><button class="btn ghost" id="reset">Reset</button><button class="btn primary" id="topAdd">+ Add</button></div></header>
-<section id="today" class="view active"></section><section id="week" class="view"></section><section id="month" class="view"></section><section id="habits" class="view"></section><section id="tasks" class="view"></section><section id="history" class="view"></section><section id="tracker" class="view"></section></main></div>
+<section id="today" class="view active"></section><section id="week" class="view"></section><section id="month" class="view"></section><section id="habits" class="view"></section><section id="tasks" class="view"></section><section id="history" class="view"></section><section id="tracker" class="view"></section><section id="notebook" class="view"></section></main></div>
 
 <div class="modal hidden" id="habitModal"><div class="modalBox"><div class="modalHead"><h2>Create habit</h2><button class="x" data-close="habitModal">×</button></div><form class="form" id="habitForm"><label>Habit name<input id="hName" placeholder="e.g. Gym" required></label><label>Category<select id="hCat"><option>Fitness</option><option>Health</option><option>Learning</option><option>Career</option><option>Personal</option><option>Other</option></select></label><label>Schedule<select id="hFreq"><option value="daily">Every day — 7 days/week</option><option value="weekdays">Monday–Friday — 5 days/week</option><option value="weekends">Saturday–Sunday — 2 days/week</option><option value="custom">Custom days every week</option></select></label><div class="schedule hidden" id="hSchedule"><label>How many days per week?<select id="hCount"><option>1</option><option>2</option><option>3</option><option>4</option><option>5</option><option selected>6</option><option>7</option></select></label><div class="days" id="hDays"></div><div class="hint" id="hHint"></div></div><label>Daily target<input id="hTarget" type="number" min="1" value="1"></label><label>Reminder (optional)<input id="hReminder" type="time"></label><div class="modalActions"><button type="button" class="btn secondary" data-close="habitModal">Cancel</button><button class="btn primary">Create habit</button></div></form></div></div>
 
 <div class="modal hidden" id="taskModal"><div class="modalBox"><div class="modalHead"><h2>Create task</h2><button class="x" data-close="taskModal">×</button></div><form class="form" id="taskForm"><label>Task name<input id="tName" placeholder="e.g. Complete DSA practice" required></label><label>Start / due date<input id="tDate" type="date" required></label><label class="inline"><span><input id="tRepeat" type="checkbox"> Repeat every week</span></label><div class="schedule hidden" id="tSchedule"><label>How many days per week?<select id="tCount"><option>1</option><option>2</option><option>3</option><option>4</option><option>5</option><option>6</option><option>7</option></select></label><div class="days" id="tDays"></div><div class="hint" id="tHint"></div></div><label>Priority<select id="tPriority"><option>Low</option><option selected>Medium</option><option>High</option></select></label><label>Category<select id="tCat"><option>College</option><option>Career</option><option>Fitness</option><option>Personal</option><option>Other</option></select></label><div class="modalActions"><button type="button" class="btn secondary" data-close="taskModal">Cancel</button><button class="btn primary">Create task</button></div></form></div></div>
 
+<div class="modal hidden" id="notebookModal">
+  <div class="modalBox" style="width:min(680px,100%);max-height:90vh;overflow-y:auto">
+    <div class="modalHead">
+      <h2 id="notebookModalTitle">Log Journal & Workout</h2>
+      <button class="x" data-close="notebookModal">×</button>
+    </div>
+    <form class="form" id="notebookForm">
+      <input type="hidden" id="nbId">
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+        <label>Date<input id="nbDate" type="date" required></label>
+        <label>Mood / Vibe
+          <select id="nbMood">
+            <option value="🤩 Great">🤩 Great — High Energy</option>
+            <option value="🙂 Good" selected>🙂 Good — Steady & Productive</option>
+            <option value="😐 Okay">😐 Okay — Average Day</option>
+            <option value="😓 Exhausted">😓 Exhausted — Need Rest</option>
+            <option value="😤 Stressed">😤 Stressed — Tough Day</option>
+          </select>
+        </label>
+      </div>
+
+      <label>Title / Highlight of the Day
+        <input id="nbTitle" placeholder="e.g. Solid chest workout & hit personal best">
+      </label>
+
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+        <label>Body Weight
+          <input id="nbBodyWeight" type="number" step="0.1" min="0" placeholder="e.g. 74.5">
+        </label>
+        <label>Weight Unit
+          <select id="nbWeightUnit">
+            <option value="kg" selected>kg</option>
+            <option value="lbs">lbs</option>
+          </select>
+        </label>
+      </div>
+
+      <label>Daily Journal / Reflections ("Write about your day")
+        <textarea id="nbJournal" rows="4" style="width:100%;padding:11px 12px;border:1px solid #dfe2ea;border-radius:10px;font:inherit;outline:none;resize:vertical" placeholder="How did today go? Write about your day, reflections, wins, or thoughts..."></textarea>
+      </label>
+
+      <div style="background:#f7f8fc;border:1px solid var(--line);border-radius:12px;padding:14px;margin-top:6px">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
+          <h3 style="margin:0;font-size:14px;font-weight:800">🏋️ Workout & Weight Progress Log</h3>
+          <button type="button" class="btn secondary" style="padding:6px 11px;font-size:12px" onclick="addWorkoutRow()">+ Add Exercise</button>
+        </div>
+        <div id="workoutRows" style="display:grid;gap:8px"></div>
+      </div>
+
+      <div class="modalActions" style="margin-top:12px">
+        <button type="button" class="btn secondary" data-close="notebookModal">Cancel</button>
+        <button class="btn primary" type="submit">Save Entry</button>
+      </div>
+    </form>
+  </div>
+</div>
+
 <script>
-const KEY='habitflow_v3';const CLOUD_TABLE='habitflow_data';const DAYS=['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];const DAYNUM=[1,2,3,4,5,6,0];const SUPABASE_URL=window.HABITFLOW_CONFIG?.url||'PASTE_YOUR_SUPABASE_URL_HERE';const SUPABASE_KEY=window.HABITFLOW_CONFIG?.key||'PASTE_YOUR_SUPABASE_PUBLISHABLE_KEY_HERE';const CLOUD_CONFIGURED=!SUPABASE_URL.includes('PASTE_')&&!SUPABASE_KEY.includes('PASTE_');const sb=CLOUD_CONFIGURED?window.supabase.createClient(SUPABASE_URL,SUPABASE_KEY):null;const EMPTY_STATE={habits:[],tasks:[],checks:{},taskChecks:{},checkTimes:{},taskCheckTimes:{}};let state=JSON.parse(localStorage.getItem(KEY)||'null')||JSON.parse(JSON.stringify(EMPTY_STATE));state.checkTimes=state.checkTimes||{};state.taskCheckTimes=state.taskCheckTimes||{};state.habits=state.habits||[];state.tasks=state.tasks||[];state.checks=state.checks||{};state.taskChecks=state.taskChecks||{};let view='today',sessionUser=null,cloudLoaded=false,saveTimer=null,authMode='login';
+const KEY='habitflow_v3';const CLOUD_TABLE='habitflow_data';const DAYS=['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];const DAYNUM=[1,2,3,4,5,6,0];const SUPABASE_URL=window.HABITFLOW_CONFIG?.url||'PASTE_YOUR_SUPABASE_URL_HERE';const SUPABASE_KEY=window.HABITFLOW_CONFIG?.key||'PASTE_YOUR_SUPABASE_PUBLISHABLE_KEY_HERE';const CLOUD_CONFIGURED=!SUPABASE_URL.includes('PASTE_')&&!SUPABASE_KEY.includes('PASTE_');const sb=CLOUD_CONFIGURED?window.supabase.createClient(SUPABASE_URL,SUPABASE_KEY):null;const EMPTY_STATE={habits:[],tasks:[],notebookEntries:[],checks:{},taskChecks:{},checkTimes:{},taskCheckTimes:{}};let state=JSON.parse(localStorage.getItem(KEY)||'null')||JSON.parse(JSON.stringify(EMPTY_STATE));state.checkTimes=state.checkTimes||{};state.taskCheckTimes=state.taskCheckTimes||{};state.habits=state.habits||[];state.tasks=state.tasks||[];state.notebookEntries=state.notebookEntries||[];state.checks=state.checks||{};state.taskChecks=state.taskChecks||{};let view='today',sessionUser=null,cloudLoaded=false,saveTimer=null,authMode='login';
 const pad=n=>String(n).padStart(2,'0');const iso=d=>{let x=new Date(d);return `${x.getFullYear()}-${pad(x.getMonth()+1)}-${pad(x.getDate())}`};const today=()=>iso(new Date());const dateObj=s=>new Date(s+'T12:00:00');const addDays=(s,n)=>{let d=dateObj(s);d.setDate(d.getDate()+n);return iso(d)};const uid=()=>Date.now().toString(36)+Math.random().toString(36).slice(2,7);const stamp=()=>new Date().toISOString();const fmtStamp=v=>v?new Date(v).toLocaleString(undefined,{year:'numeric',month:'short',day:'numeric',hour:'2-digit',minute:'2-digit'}):'—';const hasLocalData=()=>!!(state.habits.length||state.tasks.length||Object.keys(state.checks).length||Object.keys(state.taskChecks).length);const esc=s=>String(s).replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
 function save(){localStorage.setItem(KEY,JSON.stringify(state));if(sessionUser&&cloudLoaded)queueCloudSave()}function queueCloudSave(){clearTimeout(saveTimer);saveTimer=setTimeout(saveCloud,350)}async function saveCloud(){if(!sb||!sessionUser||!cloudLoaded)return;const {error}=await sb.from(CLOUD_TABLE).upsert({user_id:sessionUser.id,data:state,updated_at:new Date().toISOString()},{onConflict:'user_id'});if(error)showAuthMsg('Cloud sync error: '+error.message,true)}
 async function loadCloudState(){if(!sb||!sessionUser)return;const {data,error}=await sb.from(CLOUD_TABLE).select('data').eq('user_id',sessionUser.id).maybeSingle();if(error){showAuthMsg('Could not load your cloud data: '+error.message,true);return}if(data&&data.data){state={...JSON.parse(JSON.stringify(EMPTY_STATE)),...data.data};localStorage.setItem(KEY,JSON.stringify(state))}else{const oldLocal=hasLocalData()?JSON.parse(JSON.stringify(state)):null;state=JSON.parse(JSON.stringify(EMPTY_STATE));if(oldLocal&&confirm('This HabitFlow account has no cloud data yet. Import the habits and history currently saved in this browser?')){state=oldLocal}localStorage.setItem(KEY,JSON.stringify(state));cloudLoaded=true;await saveCloud();cloudLoaded=true;render();return}cloudLoaded=true;render()}
@@ -143,7 +221,448 @@ function scrollToTrackerToday(smooth=true){
  },60);
 }
 function trackerClick(kind,id,d){let i=trackerItems().find(x=>x.kind===kind&&x.id===id);if(i)trackerToggle(i,d)}
-function render(){document.getElementById('dateLabel').textContent=new Date().toLocaleDateString(undefined,{weekday:'long',month:'long',day:'numeric',year:'numeric'});document.getElementById('pageTitle').textContent=view==='tracker'?'Master Tracker':view[0].toUpperCase()+view.slice(1);document.querySelectorAll('.view').forEach(x=>x.classList.toggle('active',x.id===view));document.querySelectorAll('#nav button').forEach(x=>x.classList.toggle('active',x.dataset.view===view));renderToday();renderWeek();renderMonth();renderHabits();renderTasks();renderHistory();renderTracker();if(view==='tracker')scrollToTrackerToday(false);}
+
+let notebookSubView = 'entries';
+let notebookSearch = '';
+let selectedChartExercise = 'all';
+
+function openNotebookModal(id = null) {
+  const modal = document.getElementById('notebookModal');
+  const form = document.getElementById('notebookForm');
+  form.reset();
+  document.getElementById('workoutRows').innerHTML = '';
+  document.getElementById('nbDate').value = today();
+  document.getElementById('nbId').value = '';
+
+  if (id) {
+    const item = (state.notebookEntries || []).find(e => e.id === id);
+    if (item) {
+      document.getElementById('notebookModalTitle').textContent = 'Edit Journal & Workout Entry';
+      document.getElementById('nbId').value = item.id;
+      document.getElementById('nbDate').value = item.date || today();
+      document.getElementById('nbMood').value = item.mood || '🙂 Good';
+      document.getElementById('nbTitle').value = item.title || '';
+      document.getElementById('nbBodyWeight').value = (item.bodyWeight !== undefined && item.bodyWeight !== null) ? item.bodyWeight : '';
+      document.getElementById('nbWeightUnit').value = item.weightUnit || 'kg';
+      document.getElementById('nbJournal').value = item.journal || '';
+      if (item.workouts && item.workouts.length) {
+        item.workouts.forEach(w => addWorkoutRow(w));
+      } else {
+        addWorkoutRow();
+      }
+    }
+  } else {
+    document.getElementById('notebookModalTitle').textContent = 'Log Journal & Workout';
+    addWorkoutRow();
+  }
+  modal.classList.remove('hidden');
+}
+
+function addWorkoutRow(data = {}) {
+  const container = document.getElementById('workoutRows');
+  const div = document.createElement('div');
+  div.className = 'workoutRowInput';
+  div.innerHTML = `
+    <input class="wEx" placeholder="Exercise (e.g. Bench Press)" value="${esc(data.exercise || '')}" required>
+    <select class="wCat">
+      <option ${data.category === 'Legs' ? 'selected' : ''}>Legs</option>
+      <option ${!data.category || data.category === 'Chest' ? 'selected' : ''}>Chest</option>
+      <option ${data.category === 'Back' ? 'selected' : ''}>Back</option>
+      <option ${data.category === 'Shoulders' ? 'selected' : ''}>Shoulders</option>
+      <option ${data.category === 'Arms' ? 'selected' : ''}>Arms</option>
+      <option ${data.category === 'Core' ? 'selected' : ''}>Core</option>
+      <option ${data.category === 'Cardio' ? 'selected' : ''}>Cardio</option>
+      <option ${data.category === 'Other' ? 'selected' : ''}>Other</option>
+    </select>
+    <input class="wWeight" type="number" step="0.5" placeholder="Weight" value="${data.weight !== undefined && data.weight !== null ? data.weight : ''}">
+    <input class="wSets" type="number" min="1" placeholder="Sets" value="${data.sets !== undefined ? data.sets : '3'}">
+    <input class="wReps" type="number" min="1" placeholder="Reps" value="${data.reps !== undefined ? data.reps : '10'}">
+    <input class="wNotes" placeholder="Notes / Feeling" value="${esc(data.notes || '')}">
+    <button type="button" class="x" onclick="this.parentElement.remove()" style="width:28px;height:28px;font-size:16px;line-height:1">×</button>
+  `;
+  container.appendChild(div);
+}
+
+function saveNotebookEntry(e) {
+  e.preventDefault();
+  const id = document.getElementById('nbId').value;
+  const date = document.getElementById('nbDate').value;
+  const mood = document.getElementById('nbMood').value;
+  const title = document.getElementById('nbTitle').value.trim();
+  const bodyWeightVal = document.getElementById('nbBodyWeight').value;
+  const bodyWeight = bodyWeightVal !== '' ? Number(bodyWeightVal) : null;
+  const weightUnit = document.getElementById('nbWeightUnit').value;
+  const journal = document.getElementById('nbJournal').value.trim();
+
+  const rows = [...document.querySelectorAll('#workoutRows .workoutRowInput')];
+  const workouts = rows.map(r => {
+    const ex = r.querySelector('.wEx').value.trim();
+    if (!ex) return null;
+    return {
+      id: uid(),
+      exercise: ex,
+      category: r.querySelector('.wCat').value,
+      weight: Number(r.querySelector('.wWeight').value || 0),
+      sets: Number(r.querySelector('.wSets').value || 1),
+      reps: Number(r.querySelector('.wReps').value || 1),
+      notes: r.querySelector('.wNotes').value.trim(),
+      unit: weightUnit
+    };
+  }).filter(Boolean);
+
+  state.notebookEntries = state.notebookEntries || [];
+
+  if (id) {
+    const idx = state.notebookEntries.findIndex(x => x.id === id);
+    if (idx !== -1) {
+      state.notebookEntries[idx] = {
+        ...state.notebookEntries[idx],
+        date,
+        mood,
+        title,
+        bodyWeight,
+        weightUnit,
+        journal,
+        workouts,
+        updatedAt: stamp()
+      };
+    }
+  } else {
+    state.notebookEntries.push({
+      id: uid(),
+      date,
+      mood,
+      title,
+      bodyWeight,
+      weightUnit,
+      journal,
+      workouts,
+      createdAt: stamp(),
+      updatedAt: stamp()
+    });
+  }
+
+  save();
+  document.getElementById('notebookModal').classList.add('hidden');
+  render();
+}
+
+function deleteNotebookEntry(id) {
+  if (confirm('Delete this notebook entry?')) {
+    state.notebookEntries = (state.notebookEntries || []).filter(e => e.id !== id);
+    save();
+    render();
+  }
+}
+
+function setNotebookSubView(sub) {
+  notebookSubView = sub;
+  renderNotebook();
+}
+
+function onNotebookSearch(val) {
+  notebookSearch = val;
+  renderNotebook();
+}
+
+function renderNotebook() {
+  const box = document.getElementById('notebook');
+  if (!box) return;
+
+  const entries = (state.notebookEntries || []).slice().sort((a, b) => new Date(b.date) - new Date(a.date));
+
+  const filtered = entries.filter(e => {
+    if (!notebookSearch) return true;
+    const q = notebookSearch.toLowerCase();
+    const matchTitle = (e.title || '').toLowerCase().includes(q);
+    const matchJournal = (e.journal || '').toLowerCase().includes(q);
+    const matchWorkout = (e.workouts || []).some(w => (w.exercise || '').toLowerCase().includes(q) || (w.notes || '').toLowerCase().includes(q));
+    return matchTitle || matchJournal || matchWorkout;
+  });
+
+  const totalEntries = entries.length;
+  const weights = entries.filter(e => e.bodyWeight !== null && e.bodyWeight !== undefined && e.bodyWeight > 0).map(e => ({ date: e.date, weight: Number(e.bodyWeight), unit: e.weightUnit || 'kg' }));
+  const latestWeightObj = weights[0];
+  const latestWeight = latestWeightObj ? `${latestWeightObj.weight} ${latestWeightObj.unit}` : '—';
+
+  let totalWorkoutsCount = 0;
+  const exerciseMap = {};
+  entries.forEach(e => {
+    (e.workouts || []).forEach(w => {
+      totalWorkoutsCount++;
+      const name = (w.exercise || 'Unspecified').trim();
+      if (!exerciseMap[name]) exerciseMap[name] = [];
+      exerciseMap[name].push({
+        date: e.date,
+        weight: Number(w.weight || 0),
+        sets: Number(w.sets || 0),
+        reps: Number(w.reps || 0),
+        unit: w.unit || 'kg',
+        notes: w.notes || ''
+      });
+    });
+  });
+
+  const prs = {};
+  Object.keys(exerciseMap).forEach(name => {
+    const maxWeight = Math.max(...exerciseMap[name].map(x => x.weight));
+    const maxObj = exerciseMap[name].find(x => x.weight === maxWeight);
+    prs[name] = { maxWeight, unit: maxObj?.unit || 'kg', date: maxObj?.date, sets: maxObj?.sets, reps: maxObj?.reps };
+  });
+
+  box.innerHTML = `
+    <div class="card" style="margin-bottom:20px;background:linear-gradient(135deg,#fff,#f8f7ff)">
+      <div class="head" style="flex-wrap:wrap;gap:14px">
+        <div>
+          <h2 style="font-size:24px;display:flex;align-items:center;gap:8px">📖 Notebook & Workout Tracker</h2>
+          <div class="muted">Write daily reflections, log your day, and track strength & body weight progress over time.</div>
+        </div>
+        <div style="display:flex;gap:8px;flex-wrap:wrap">
+          <button class="btn primary" onclick="openNotebookModal()">+ Log Entry</button>
+        </div>
+      </div>
+
+      <div class="grid stats" style="margin-top:16px;margin-bottom:0">
+        <div class="card" style="background:#fff">
+          <div class="statLabel">Journal Entries</div>
+          <div class="statValue">${totalEntries}</div>
+          <div class="statSub">Days logged</div>
+        </div>
+        <div class="card" style="background:#fff">
+          <div class="statLabel">Latest Body Weight</div>
+          <div class="statValue">${latestWeight}</div>
+          <div class="statSub">${weights.length > 1 ? (weights[0].weight - weights[weights.length-1].weight >= 0 ? '+' : '') + (weights[0].weight - weights[weights.length-1].weight).toFixed(1) + ' ' + weights[0].unit + ' total' : 'Weight progress'}</div>
+        </div>
+        <div class="card" style="background:#fff">
+          <div class="statLabel">Workouts Tracked</div>
+          <div class="statValue">${totalWorkoutsCount}</div>
+          <div class="statSub">${Object.keys(exerciseMap).length} distinct exercises</div>
+        </div>
+        <div class="card" style="background:#fff">
+          <div class="statLabel">Personal Records (PRs)</div>
+          <div class="statValue">${Object.keys(prs).length}</div>
+          <div class="statSub">Exercises with max PRs</div>
+        </div>
+      </div>
+    </div>
+
+    <div style="display:flex;justify-content:space-between;align-items:center;gap:12px;margin-bottom:16px;flex-wrap:wrap">
+      <div class="filters">
+        <button class="btn ${notebookSubView === 'entries' ? 'primary' : 'ghost'}" onclick="setNotebookSubView('entries')">📓 Journal Entries (${filtered.length})</button>
+        <button class="btn ${notebookSubView === 'charts' ? 'primary' : 'ghost'}" onclick="setNotebookSubView('charts')">📈 Progress Charts</button>
+        <button class="btn ${notebookSubView === 'prs' ? 'primary' : 'ghost'}" onclick="setNotebookSubView('prs')">🏆 Workout PRs (${Object.keys(prs).length})</button>
+      </div>
+      <div style="min-width:220px;flex:1;max-width:320px">
+        <input type="text" id="nbSearchInput" placeholder="Search journal or workouts..." value="${esc(notebookSearch)}" oninput="onNotebookSearch(this.value)" style="width:100%;padding:8px 12px;border:1px solid var(--line);border-radius:9px;background:#fff">
+      </div>
+    </div>
+
+    ${notebookSubView === 'entries' ? renderNotebookEntriesView(filtered, prs) : ''}
+    ${notebookSubView === 'charts' ? renderNotebookChartsView(weights, exerciseMap) : ''}
+    ${notebookSubView === 'prs' ? renderNotebookPrsView(prs) : ''}
+  `;
+}
+
+function renderNotebookEntriesView(entries, prs) {
+  if (!entries.length) {
+    return `<div class="card"><div class="empty">No notebook entries found. Click <b>+ Log Entry</b> to write about your day or record a workout!</div></div>`;
+  }
+
+  return entries.map(e => {
+    const formattedDate = dateObj(e.date).toLocaleDateString(undefined, { weekday: 'short', month: 'short', day: 'numeric', year: 'numeric' });
+    const moodBadge = e.mood ? `<span class="nbMoodBadge">${esc(e.mood)}</span>` : '';
+    const weightBadge = (e.bodyWeight !== null && e.bodyWeight !== undefined && e.bodyWeight > 0) ? `<span class="nbWeightBadge">⚖️ ${e.bodyWeight} ${esc(e.weightUnit || 'kg')}</span>` : '';
+
+    const workoutHtml = (e.workouts && e.workouts.length) ? `
+      <div class="nbWorkoutSection">
+        <div class="nbWorkoutTitle">🏋️ Logged Workouts (${e.workouts.length})</div>
+        <div class="nbWorkoutGrid">
+          ${e.workouts.map(w => {
+            const isPr = prs[w.exercise] && prs[w.exercise].maxWeight === Number(w.weight) && Number(w.weight) > 0;
+            return `
+              <div class="workoutChip">
+                <div class="workoutChipHead">
+                  <span>${esc(w.exercise)}</span>
+                  ${isPr ? '<span class="prBadge">⭐ PR</span>' : `<span class="tag">${esc(w.category || 'General')}</span>`}
+                </div>
+                <div class="workoutChipSub">
+                  <b>${w.weight > 0 ? w.weight + ' ' + esc(w.unit || 'kg') : 'Bodyweight'}</b> · ${w.sets} sets × ${w.reps} reps
+                </div>
+                ${w.notes ? `<div style="font-size:11px;color:var(--muted);margin-top:4px">💬 "${esc(w.notes)}"</div>` : ''}
+              </div>
+            `;
+          }).join('')}
+        </div>
+      </div>
+    ` : '';
+
+    return `
+      <div class="nbCard">
+        <div class="nbHead">
+          <div class="nbDateTag">
+            📅 ${formattedDate}
+            ${moodBadge}
+            ${weightBadge}
+          </div>
+          <div style="display:flex;gap:6px">
+            <button class="btn secondary" style="padding:5px 10px;font-size:12px" onclick="openNotebookModal('${e.id}')">Edit</button>
+            <button class="delete" style="padding:5px 10px;font-size:12px" onclick="deleteNotebookEntry('${e.id}')">Delete</button>
+          </div>
+        </div>
+
+        ${e.title ? `<div class="nbTitleText">${esc(e.title)}</div>` : ''}
+        ${e.journal ? `<div class="nbJournalText">${esc(e.journal)}</div>` : ''}
+        ${workoutHtml}
+      </div>
+    `;
+  }).join('');
+}
+
+function renderNotebookChartsView(weights, exerciseMap) {
+  let weightSvg = '<div class="empty">Log your body weight in notebook entries to view weight trends over time!</div>';
+  if (weights.length >= 2) {
+    const sortedWeights = weights.slice().sort((a, b) => new Date(a.date) - new Date(b.date));
+    const W = 800, H = 160, p = 25;
+    const minW = Math.min(...sortedWeights.map(w => w.weight)) - 1;
+    const maxW = Math.max(...sortedWeights.map(w => w.weight)) + 1;
+    const pts = sortedWeights.map((w, i) => {
+      const x = p + (i / Math.max(1, sortedWeights.length - 1)) * (W - 2 * p);
+      const y = H - p - ((w.weight - minW) / Math.max(1, maxW - minW)) * (H - 2 * p);
+      return `${x},${y}`;
+    }).join(' ');
+
+    const circles = sortedWeights.map((w, i) => {
+      const x = p + (i / Math.max(1, sortedWeights.length - 1)) * (W - 2 * p);
+      const y = H - p - ((w.weight - minW) / Math.max(1, maxW - minW)) * (H - 2 * p);
+      return `<circle cx="${x}" cy="${y}" r="4" fill="#157b51"><title>${w.date}: ${w.weight} ${w.unit}</title></circle>`;
+    }).join('');
+
+    weightSvg = `
+      <div style="height:170px;background:#f9fbf9;border:1px solid #d4edd9;border-radius:12px;padding:10px;overflow:hidden">
+        <svg viewBox="0 0 ${W} ${H}" preserveAspectRatio="none" style="width:100%;height:100%">
+          <polyline points="${pts}" fill="none" stroke="#157b51" stroke-width="3"/>
+          ${circles}
+        </svg>
+      </div>
+      <div style="display:flex;justify-content:space-between;font-size:11px;color:var(--muted);margin-top:6px">
+        <span>${sortedWeights[0].date} (${sortedWeights[0].weight} ${sortedWeights[0].unit})</span>
+        <span>${sortedWeights[sortedWeights.length - 1].date} (${sortedWeights[sortedWeights.length - 1].weight} ${sortedWeights[sortedWeights.length - 1].unit})</span>
+      </div>
+    `;
+  } else if (weights.length === 1) {
+    weightSvg = `<div class="muted" style="padding:15px">1 body weight entry logged: <b>${weights[0].weight} ${weights[0].unit}</b> on ${weights[0].date}. Log more days to render trend line!</div>`;
+  }
+
+  const exerciseNames = Object.keys(exerciseMap);
+  let selectedEx = selectedChartExercise;
+  if (selectedEx === 'all' || !exerciseMap[selectedEx]) {
+    selectedEx = exerciseNames[0] || 'all';
+  }
+
+  let exerciseSvg = '<div class="empty">No workout weight data available to display charts.</div>';
+  if (selectedEx !== 'all' && exerciseMap[selectedEx]) {
+    const list = exerciseMap[selectedEx].slice().sort((a, b) => new Date(a.date) - new Date(b.date));
+    if (list.length >= 2) {
+      const W = 800, H = 160, p = 25;
+      const minVal = Math.min(...list.map(x => x.weight)) - 2;
+      const maxVal = Math.max(...list.map(x => x.weight)) + 2;
+      const pts = list.map((w, i) => {
+        const x = p + (i / Math.max(1, list.length - 1)) * (W - 2 * p);
+        const y = H - p - ((w.weight - minVal) / Math.max(1, maxVal - minVal)) * (H - 2 * p);
+        return `${x},${y}`;
+      }).join(' ');
+
+      const circles = list.map((w, i) => {
+        const x = p + (i / Math.max(1, list.length - 1)) * (W - 2 * p);
+        const y = H - p - ((w.weight - minVal) / Math.max(1, maxVal - minVal)) * (H - 2 * p);
+        return `<circle cx="${x}" cy="${y}" r="4" fill="#6657f5"><title>${w.date}: ${w.weight} ${w.unit} (${w.sets}x${w.reps})</title></circle>`;
+      }).join('');
+
+      exerciseSvg = `
+        <div style="height:170px;background:#f8f7ff;border:1px solid #e0dcfc;border-radius:12px;padding:10px;overflow:hidden">
+          <svg viewBox="0 0 ${W} ${H}" preserveAspectRatio="none" style="width:100%;height:100%">
+            <polyline points="${pts}" fill="none" stroke="#6657f5" stroke-width="3"/>
+            ${circles}
+          </svg>
+        </div>
+        <div style="display:flex;justify-content:space-between;font-size:11px;color:var(--muted);margin-top:6px">
+          <span>Start: ${list[0].weight} ${list[0].unit} (${list[0].date})</span>
+          <span>Latest: ${list[list.length - 1].weight} ${list[list.length - 1].unit} (${list[list.length - 1].date})</span>
+        </div>
+      `;
+    } else {
+      exerciseSvg = `<div class="muted" style="padding:15px">1 session recorded for <b>${esc(selectedEx)}</b>: ${list[0].weight} ${list[0].unit} (${list[0].sets}x${list[0].reps}) on ${list[0].date}. Log more sessions to generate progress line!</div>`;
+    }
+  }
+
+  return `
+    <div class="grid two">
+      <div class="card">
+        <div class="head">
+          <div>
+            <h2>⚖️ Body Weight Progress Trend</h2>
+            <div class="muted">History of logged body weight measurements</div>
+          </div>
+        </div>
+        ${weightSvg}
+      </div>
+
+      <div class="card">
+        <div class="head">
+          <div>
+            <h2>🏋️ Exercise Weight Progression</h2>
+            <div class="muted">Select an exercise to track strength progress over time</div>
+          </div>
+          ${exerciseNames.length ? `
+            <select style="border:1px solid var(--line);padding:6px 10px;border-radius:8px;background:#fff;font-weight:700" onchange="selectedChartExercise=this.value;renderNotebook()">
+              ${exerciseNames.map(name => `<option value="${esc(name)}" ${name === selectedEx ? 'selected' : ''}>${esc(name)}</option>`).join('')}
+            </select>
+          ` : ''}
+        </div>
+        ${exerciseSvg}
+      </div>
+    </div>
+  `;
+}
+
+function renderNotebookPrsView(prs) {
+  const keys = Object.keys(prs);
+  if (!keys.length) {
+    return `<div class="card"><div class="empty">No exercise PRs recorded yet. Log your workouts to automatically track your max weights & personal records!</div></div>`;
+  }
+
+  return `
+    <div class="card">
+      <div class="head">
+        <div>
+          <h2>🏆 Exercise Personal Records (PRs)</h2>
+          <div class="muted">Highest weight achieved for every exercise in your workout logs</div>
+        </div>
+      </div>
+      <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:14px;margin-top:10px">
+        ${keys.map(name => {
+          const pr = prs[name];
+          return `
+            <div style="background:linear-gradient(135deg,#fffdf7,#fff);border:1px solid #ffe8b3;border-radius:14px;padding:14px;box-shadow:0 4px 14px rgba(255,200,50,.08)">
+              <div style="display:flex;justify-content:space-between;align-items:flex-start">
+                <div style="font-weight:850;font-size:15px;color:var(--ink)">${esc(name)}</div>
+                <span class="prBadge">🏆 MAX PR</span>
+              </div>
+              <div style="font-size:26px;font-weight:900;color:#b47d00;margin:8px 0 2px">
+                ${pr.maxWeight > 0 ? pr.maxWeight + ' ' + esc(pr.unit) : 'Bodyweight'}
+              </div>
+              <div style="font-size:11px;color:var(--muted)">
+                ${pr.sets ? pr.sets + ' sets × ' + pr.reps + ' reps · ' : ''}Achieved on ${pr.date || '—'}
+              </div>
+            </div>
+          `;
+        }).join('')}
+      </div>
+    </div>
+  `;
+}
+
+function render(){document.getElementById('dateLabel').textContent=new Date().toLocaleDateString(undefined,{weekday:'long',month:'long',day:'numeric',year:'numeric'});document.getElementById('pageTitle').textContent=view==='tracker'?'Master Tracker':(view==='notebook'?'Notebook & Workout':view[0].toUpperCase()+view.slice(1));document.querySelectorAll('.view').forEach(x=>x.classList.toggle('active',x.id===view));document.querySelectorAll('#nav button').forEach(x=>x.classList.toggle('active',x.dataset.view===view));renderToday();renderWeek();renderMonth();renderHabits();renderTasks();renderHistory();renderTracker();renderNotebook();if(view==='tracker')scrollToTrackerToday(false);}
 function buildDays(container,countEl,hintEl){container.innerHTML=DAYS.map((n,i)=>`<label class="dayPick"><input type="checkbox" value="${DAYNUM[i]}"><span>${n}</span></label>`).join('');function update(){let n=Number(countEl.value),boxes=[...container.querySelectorAll('input')];boxes.forEach(b=>b.disabled=false);hintEl.textContent=`Select exactly ${n} day${n===1?'':'s'} per week.`;boxes.forEach(b=>b.onchange=()=>{let checked=boxes.filter(x=>x.checked);if(checked.length>n)b.checked=false;});}countEl.onchange=()=>{container.querySelectorAll('input').forEach(x=>x.checked=false);update()};update()}
 function openHabit(){document.getElementById('habitModal').classList.remove('hidden');document.getElementById('habitForm').reset();document.getElementById('hSchedule').classList.add('hidden');document.getElementById('hCount').value='6';document.querySelectorAll('#hDays input').forEach(x=>x.checked=false)}function openTask(){document.getElementById('taskModal').classList.remove('hidden');document.getElementById('taskForm').reset();document.getElementById('tDate').value=today();document.getElementById('tSchedule').classList.add('hidden')}
 function deleteHabit(id){if(confirm('Delete this habit and its history?')){state.habits=state.habits.filter(h=>h.id!==id);Object.keys(state.checks).forEach(k=>{if(k.startsWith(id+'|'))delete state.checks[k]});Object.keys(state.checkTimes).forEach(k=>{if(k.startsWith(id+'|'))delete state.checkTimes[k]});save();render()}}
@@ -153,7 +672,9 @@ buildDays(document.getElementById('hDays'),document.getElementById('hCount'),doc
 document.getElementById('hFreq').onchange=e=>document.getElementById('hSchedule').classList.toggle('hidden',e.target.value!=='custom');document.getElementById('tRepeat').onchange=e=>document.getElementById('tSchedule').classList.toggle('hidden',!e.target.checked);
 document.getElementById('habitForm').onsubmit=e=>{e.preventDefault();let f=document.getElementById('hFreq').value,days=f==='daily'?DAYNUM:f==='weekdays'?[1,2,3,4,5]:f==='weekends'?[6,0]:[...document.querySelectorAll('#hDays input:checked')].map(x=>Number(x.value)),n=Number(document.getElementById('hCount').value);if(f==='custom'&&days.length!==n)return alert(`Select exactly ${n} days.`);state.habits.push({id:uid(),name:document.getElementById('hName').value.trim(),category:document.getElementById('hCat').value,frequency:f,days,target:Number(document.getElementById('hTarget').value)||1,reminder:document.getElementById('hReminder').value,createdAt:stamp()});save();document.getElementById('habitModal').classList.add('hidden');render()};
 document.getElementById('taskForm').onsubmit=e=>{e.preventDefault();let repeat=document.getElementById('tRepeat').checked,days=repeat?[...document.querySelectorAll('#tDays input:checked')].map(x=>Number(x.value)):[],n=Number(document.getElementById('tCount').value);if(repeat&&days.length!==n)return alert(`Select exactly ${n} days.`);state.tasks.push({id:uid(),name:document.getElementById('tName').value.trim(),date:document.getElementById('tDate').value,startDate:document.getElementById('tDate').value,repeat,days,priority:document.getElementById('tPriority').value,category:document.getElementById('tCat').value,createdAt:stamp()});save();document.getElementById('taskModal').classList.add('hidden');render()};
-document.querySelectorAll('[data-close]').forEach(b=>b.onclick=()=>document.getElementById(b.dataset.close).classList.add('hidden'));document.getElementById('sideHabit').onclick=openHabit;document.getElementById('sideTask').onclick=openTask;document.getElementById('topAdd').onclick=openHabit;document.querySelectorAll('#nav button').forEach(b=>b.onclick=()=>{view=b.dataset.view;render()});document.getElementById('export').onclick=()=>{let a=document.createElement('a');a.href=URL.createObjectURL(new Blob([JSON.stringify(state,null,2)],{type:'application/json'}));a.download='habitflow-backup.json';a.click()};document.getElementById('reset').onclick=()=>{if(confirm('Reset all HabitFlow data?')){state={habits:[],tasks:[],checks:{},taskChecks:{},checkTimes:{},taskCheckTimes:{}};save();render()}};
-window.openHabit=openHabit;window.openTask=openTask;window.toggleHabit=toggleHabit;window.toggleTask=toggleTask;window.deleteHabit=deleteHabit;window.deleteTask=deleteTask;window.trackerClick=trackerClick;window.scrollToTrackerToday=scrollToTrackerToday;initAuth();
+document.getElementById('notebookForm').onsubmit=saveNotebookEntry;
+document.querySelectorAll('[data-close]').forEach(b=>b.onclick=()=>document.getElementById(b.dataset.close).classList.add('hidden'));document.getElementById('sideHabit').onclick=openHabit;document.getElementById('sideTask').onclick=openTask;document.getElementById('sideNotebook').onclick=()=>openNotebookModal();document.getElementById('topAdd').onclick=()=>{if(view==='notebook')openNotebookModal();else openHabit();};document.querySelectorAll('#nav button').forEach(b=>b.onclick=()=>{view=b.dataset.view;render()});document.getElementById('export').onclick=()=>{let a=document.createElement('a');a.href=URL.createObjectURL(new Blob([JSON.stringify(state,null,2)],{type:'application/json'}));a.download='habitflow-backup.json';a.click()};document.getElementById('reset').onclick=()=>{if(confirm('Reset all HabitFlow data?')){state={habits:[],tasks:[],notebookEntries:[],checks:{},taskChecks:{},checkTimes:{},taskCheckTimes:{}};save();render()}};
+window.openHabit=openHabit;window.openTask=openTask;window.toggleHabit=toggleHabit;window.toggleTask=toggleTask;window.deleteHabit=deleteHabit;window.deleteTask=deleteTask;window.trackerClick=trackerClick;window.scrollToTrackerToday=scrollToTrackerToday;window.openNotebookModal=openNotebookModal;window.addWorkoutRow=addWorkoutRow;window.deleteNotebookEntry=deleteNotebookEntry;window.setNotebookSubView=setNotebookSubView;window.onNotebookSearch=onNotebookSearch;initAuth();
 </script>
 </body></html>
+

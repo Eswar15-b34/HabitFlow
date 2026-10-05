@@ -3,7 +3,7 @@
 
 create table if not exists public.habitflow_data (
   user_id uuid primary key references auth.users(id) on delete cascade,
-  data jsonb not null default '{"habits":[],"tasks":[],"checks":{},"taskChecks":{},"checkTimes":{},"taskCheckTimes":{}}'::jsonb,
+  data jsonb not null default '{"habits":[],"tasks":[],"notebookEntries":[],"checks":{},"taskChecks":{},"checkTimes":{},"taskCheckTimes":{}}'::jsonb,
   updated_at timestamptz not null default now()
 );
 
