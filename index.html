@@ -126,9 +126,21 @@
 
       <div style="background:#f7f8fc;border:1px solid var(--line);border-radius:12px;padding:14px;margin-top:6px">
         <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
-          <h3 style="margin:0;font-size:14px;font-weight:800">🏋️ Workout & Weight Progress Log</h3>
-          <button type="button" class="btn secondary" style="padding:6px 11px;font-size:12px" onclick="addWorkoutRow()">+ Add Exercise</button>
+          <h3 style="margin:0;font-size:14px;font-weight:800">🏋️ Workout Log</h3>
+          <div style="display:flex;gap:6px">
+            <button type="button" class="btn secondary" style="padding:6px 11px;font-size:12px" onclick="openSplitModal()">⚙️ Split Setup</button>
+            <button type="button" class="btn secondary" style="padding:6px 11px;font-size:12px" onclick="addWorkoutRow()">+ Add Exercise</button>
+          </div>
         </div>
+
+        <div id="splitSuggestBanner" style="background:#eef0ff;border:1px solid #cbd0fc;border-radius:10px;padding:10px 12px;margin-bottom:10px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px">
+          <div>
+            <div style="font-weight:850;font-size:12px;color:#4136b8" id="splitSuggestText">🗓️ Scheduled Split: Loading...</div>
+            <div style="font-size:11px;color:var(--muted);margin-top:2px" id="splitSuggestExercises"></div>
+          </div>
+          <button type="button" class="btn primary" style="padding:5px 10px;font-size:12px" onclick="autoFillTodaySplit()">⚡ Auto-fill Split Exercises</button>
+        </div>
+
         <div id="workoutRows" style="display:grid;gap:8px"></div>
       </div>
 
@@ -140,8 +152,38 @@
   </div>
 </div>
 
-<script>
-const KEY='habitflow_v3';const CLOUD_TABLE='habitflow_data';const DAYS=['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];const DAYNUM=[1,2,3,4,5,6,0];const SUPABASE_URL=window.HABITFLOW_CONFIG?.url||'PASTE_YOUR_SUPABASE_URL_HERE';const SUPABASE_KEY=window.HABITFLOW_CONFIG?.key||'PASTE_YOUR_SUPABASE_PUBLISHABLE_KEY_HERE';const CLOUD_CONFIGURED=!SUPABASE_URL.includes('PASTE_')&&!SUPABASE_KEY.includes('PASTE_');const sb=CLOUD_CONFIGURED?window.supabase.createClient(SUPABASE_URL,SUPABASE_KEY):null;const EMPTY_STATE={habits:[],tasks:[],notebookEntries:[],checks:{},taskChecks:{},checkTimes:{},taskCheckTimes:{}};let state=JSON.parse(localStorage.getItem(KEY)||'null')||JSON.parse(JSON.stringify(EMPTY_STATE));state.checkTimes=state.checkTimes||{};state.taskCheckTimes=state.taskCheckTimes||{};state.habits=state.habits||[];state.tasks=state.tasks||[];state.notebookEntries=state.notebookEntries||[];state.checks=state.checks||{};state.taskChecks=state.taskChecks||{};let view='today',sessionUser=null,cloudLoaded=false,saveTimer=null,authMode='login';
+<div class="modal hidden" id="splitModal">
+  <div class="modalBox" style="width:min(720px,100%);max-height:90vh;overflow-y:auto">
+    <div class="modalHead">
+      <h2>⚙️ Weekly Workout Split Setup</h2>
+      <button class="x" data-close="splitModal">×</button>
+    </div>
+    <p class="muted" style="margin-top:-10px;margin-bottom:14px">Configure your weekly workout split once! HabitFlow will automatically auto-fill today's split exercises whenever you log your workout.</p>
+    
+    <div style="background:#f0efff;border:1px solid #d4d0fc;border-radius:12px;padding:12px;margin-bottom:14px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px">
+      <span style="font-weight:750;font-size:13px;color:#4136b8">Apply Preset Routine:</span>
+      <select id="splitPresetSelect" onchange="applySplitPreset(this.value)" style="padding:6px 10px;border-radius:8px;border:1px solid #b2abf8;background:#fff;font-weight:700">
+        <option value="">Choose a preset routine template...</option>
+        <option value="ppl">Push / Pull / Legs (6-Day)</option>
+        <option value="upper_lower">Upper / Lower Split (4-Day)</option>
+        <option value="bro">Bro Split — Muscle Groups (5-Day)</option>
+        <option value="full_body">Full Body Split (3-Day)</option>
+      </select>
+    </div>
+
+    <form class="form" id="splitForm">
+      <div id="splitDaysConfig" style="display:grid;gap:12px"></div>
+      <div class="modalActions" style="margin-top:14px">
+        <button type="button" class="btn secondary" data-close="splitModal">Cancel</button>
+        <button class="btn primary" type="submit">Save Weekly Split Routine</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+const DEFAULT_SPLIT={1:{name:'Push Day (Chest, Shoulders, Triceps)',exercises:'Bench Press, Incline Dumbbell Press, Overhead Press, Tricep Dips'},2:{name:'Pull Day (Back & Biceps)',exercises:'Barbell Row, Lat Pulldown, Dumbbell Curl, Face Pulls'},3:{name:'Leg Day (Legs & Abs)',exercises:'Barbell Squat, Romanian Deadlift, Leg Press, Calf Raises'},4:{name:'Upper Body Focus',exercises:'Incline Bench Press, Pull-ups, Lateral Raises, Hammer Curls'},5:{name:'Lower Body & Core',exercises:'Deadlift, Bulgarian Split Squats, Hanging Leg Raises'},6:{name:'Rest / Active Recovery',exercises:''},0:{name:'Rest / Active Recovery',exercises:''}};
+const PRESETS_SPLIT={ppl:{1:{name:'Push Day 1 (Chest, Shoulders, Triceps)',exercises:'Bench Press, Incline Dumbbell Press, Overhead Press, Tricep Dips'},2:{name:'Pull Day 1 (Back & Biceps)',exercises:'Barbell Row, Lat Pulldown, Dumbbell Curl, Face Pulls'},3:{name:'Leg Day 1 (Legs & Core)',exercises:'Barbell Squat, Romanian Deadlift, Leg Press, Calf Raises'},4:{name:'Push Day 2',exercises:'Incline Bench Press, Dumbbell Shoulder Press, Cable Flyes, Skullcrushers'},5:{name:'Pull Day 2',exercises:'Pull-ups, Seated Cable Row, Hammer Curls, Rear Delt Flyes'},6:{name:'Leg Day 2',exercises:'Deadlift, Bulgarian Split Squat, Leg Extension, Lying Leg Curl'},0:{name:'Rest & Active Recovery',exercises:''}},upper_lower:{1:{name:'Upper Body A',exercises:'Bench Press, Barbell Row, Overhead Press, Pull-ups'},2:{name:'Lower Body A',exercises:'Barbell Squat, Romanian Deadlift, Leg Press, Calf Raises'},3:{name:'Rest Day',exercises:''},4:{name:'Upper Body B',exercises:'Incline Bench Press, Lat Pulldown, Dumbbell Shoulder Press, Bicep Curls'},5:{name:'Lower Body B',exercises:'Deadlift, Leg Extension, Lying Leg Curl, Hanging Leg Raises'},6:{name:'Rest Day',exercises:''},0:{name:'Rest Day',exercises:''}},bro:{1:{name:'Chest Day',exercises:'Bench Press, Incline Dumbbell Press, Cable Flyes, Dips'},2:{name:'Back Day',exercises:'Deadlift, Barbell Row, Lat Pulldown, T-Bar Row'},3:{name:'Legs Day',exercises:'Barbell Squat, Leg Press, Romanian Deadlift, Calf Raises'},4:{name:'Shoulders Day',exercises:'Overhead Press, Lateral Raises, Front Raises, Face Pulls'},5:{name:'Arms & Abs',exercises:'Barbell Curl, Tricep Pushdown, Hammer Curl, Skullcrushers, Plank'},6:{name:'Rest Day',exercises:''},0:{name:'Rest Day',exercises:''}},full_body:{1:{name:'Full Body A',exercises:'Barbell Squat, Bench Press, Barbell Row, Overhead Press'},2:{name:'Rest Day',exercises:''},3:{name:'Full Body B',exercises:'Deadlift, Incline Bench Press, Pull-ups, Dumbbell Lunge'},4:{name:'Rest Day',exercises:''},5:{name:'Full Body C',exercises:'Barbell Squat, Dumbbell Shoulder Press, Lat Pulldown, Dips'},6:{name:'Rest Day',exercises:''},0:{name:'Rest Day',exercises:''}}};
+const EMPTY_STATE={habits:[],tasks:[],notebookEntries:[],workoutSplit:JSON.parse(JSON.stringify(DEFAULT_SPLIT)),checks:{},taskChecks:{},checkTimes:{},taskCheckTimes:{}};let state=JSON.parse(localStorage.getItem(KEY)||'null')||JSON.parse(JSON.stringify(EMPTY_STATE));state.checkTimes=state.checkTimes||{};state.taskCheckTimes=state.taskCheckTimes||{};state.habits=state.habits||[];state.tasks=state.tasks||[];state.notebookEntries=state.notebookEntries||[];state.workoutSplit=state.workoutSplit||JSON.parse(JSON.stringify(DEFAULT_SPLIT));state.checks=state.checks||{};state.taskChecks=state.taskChecks||{};let view='today',sessionUser=null,cloudLoaded=false,saveTimer=null,authMode='login';
 const pad=n=>String(n).padStart(2,'0');const iso=d=>{let x=new Date(d);return `${x.getFullYear()}-${pad(x.getMonth()+1)}-${pad(x.getDate())}`};const today=()=>iso(new Date());const dateObj=s=>new Date(s+'T12:00:00');const addDays=(s,n)=>{let d=dateObj(s);d.setDate(d.getDate()+n);return iso(d)};const uid=()=>Date.now().toString(36)+Math.random().toString(36).slice(2,7);const stamp=()=>new Date().toISOString();const fmtStamp=v=>v?new Date(v).toLocaleString(undefined,{year:'numeric',month:'short',day:'numeric',hour:'2-digit',minute:'2-digit'}):'—';const hasLocalData=()=>!!(state.habits.length||state.tasks.length||Object.keys(state.checks).length||Object.keys(state.taskChecks).length);const esc=s=>String(s).replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
 function save(){localStorage.setItem(KEY,JSON.stringify(state));if(sessionUser&&cloudLoaded)queueCloudSave()}function queueCloudSave(){clearTimeout(saveTimer);saveTimer=setTimeout(saveCloud,350)}async function saveCloud(){if(!sb||!sessionUser||!cloudLoaded)return;const {error}=await sb.from(CLOUD_TABLE).upsert({user_id:sessionUser.id,data:state,updated_at:new Date().toISOString()},{onConflict:'user_id'});if(error)showAuthMsg('Cloud sync error: '+error.message,true)}
 async function loadCloudState(){if(!sb||!sessionUser)return;const {data,error}=await sb.from(CLOUD_TABLE).select('data').eq('user_id',sessionUser.id).maybeSingle();if(error){showAuthMsg('Could not load your cloud data: '+error.message,true);return}if(data&&data.data){state={...JSON.parse(JSON.stringify(EMPTY_STATE)),...data.data};localStorage.setItem(KEY,JSON.stringify(state))}else{const oldLocal=hasLocalData()?JSON.parse(JSON.stringify(state)):null;state=JSON.parse(JSON.stringify(EMPTY_STATE));if(oldLocal&&confirm('This HabitFlow account has no cloud data yet. Import the habits and history currently saved in this browser?')){state=oldLocal}localStorage.setItem(KEY,JSON.stringify(state));cloudLoaded=true;await saveCloud();cloudLoaded=true;render();return}cloudLoaded=true;render()}
@@ -214,6 +256,110 @@ let notebookSubView = 'entries';
 let notebookSearch = '';
 let selectedChartExercise = 'all';
 
+function openSplitModal() {
+  const modal = document.getElementById('splitModal');
+  const container = document.getElementById('splitDaysConfig');
+  const split = state.workoutSplit || DEFAULT_SPLIT;
+  const dayNames = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
+  const dayIndices = [1, 2, 3, 4, 5, 6, 0];
+
+  container.innerHTML = dayIndices.map((dayIdx, i) => {
+    const d = split[dayIdx] || { name: '', exercises: '' };
+    return `
+      <div style="background:#f9fafc;border:1px solid var(--line);border-radius:12px;padding:12px">
+        <div style="font-weight:850;font-size:13px;margin-bottom:6px;color:var(--brand)">${dayNames[i]}</div>
+        <div style="display:grid;grid-template-columns:1fr 2fr;gap:10px">
+          <input class="splitDayName" data-day="${dayIdx}" placeholder="Split Focus (e.g. Push Day)" value="${esc(d.name || '')}">
+          <input class="splitDayEx" data-day="${dayIdx}" placeholder="Exercises (comma separated)" value="${esc(d.exercises || '')}">
+        </div>
+      </div>
+    `;
+  }).join('');
+
+  document.getElementById('splitPresetSelect').value = '';
+  modal.classList.remove('hidden');
+}
+
+function applySplitPreset(presetKey) {
+  if (!presetKey || !PRESETS_SPLIT[presetKey]) return;
+  const template = PRESETS_SPLIT[presetKey];
+  Object.keys(template).forEach(dayIdx => {
+    const nameInput = document.querySelector(`.splitDayName[data-day="${dayIdx}"]`);
+    const exInput = document.querySelector(`.splitDayEx[data-day="${dayIdx}"]`);
+    if (nameInput && exInput) {
+      nameInput.value = template[dayIdx].name;
+      exInput.value = template[dayIdx].exercises;
+    }
+  });
+}
+
+function saveSplitConfig(e) {
+  e.preventDefault();
+  state.workoutSplit = state.workoutSplit || {};
+  document.querySelectorAll('.splitDayName').forEach(input => {
+    const dayIdx = input.dataset.day;
+    const exInput = document.querySelector(`.splitDayEx[data-day="${dayIdx}"]`);
+    state.workoutSplit[dayIdx] = {
+      name: input.value.trim(),
+      exercises: exInput ? exInput.value.trim() : ''
+    };
+  });
+  save();
+  document.getElementById('splitModal').classList.add('hidden');
+  updateNotebookSplitSuggest();
+  render();
+}
+
+function updateNotebookSplitSuggest() {
+  const dateVal = document.getElementById('nbDate').value || today();
+  const d = dateObj(dateVal);
+  const dayIdx = d.getDay();
+  const split = (state.workoutSplit || DEFAULT_SPLIT)[dayIdx];
+
+  const textEl = document.getElementById('splitSuggestText');
+  const exEl = document.getElementById('splitSuggestExercises');
+  if (!textEl || !exEl) return;
+
+  if (split && (split.name || split.exercises)) {
+    const dayName = d.toLocaleDateString(undefined, { weekday: 'long' });
+    textEl.textContent = `🗓️ Scheduled for ${dayName}: ${split.name || 'Custom Workout'}`;
+    exEl.textContent = split.exercises ? `Exercises: ${split.exercises}` : 'Rest / Active Recovery';
+  } else {
+    textEl.textContent = `🗓️ Scheduled: Rest / Active Recovery Day`;
+    exEl.textContent = 'No workout split configured for this day.';
+  }
+}
+
+function autoFillTodaySplit() {
+  const dateVal = document.getElementById('nbDate').value || today();
+  const dayIdx = dateObj(dateVal).getDay();
+  const split = (state.workoutSplit || DEFAULT_SPLIT)[dayIdx];
+  if (!split || !split.exercises) {
+    return alert('No exercises configured for this day. Click "⚙️ Split Setup" to configure your routine!');
+  }
+
+  const list = split.exercises.split(',').map(x => x.trim()).filter(Boolean);
+  if (!list.length) return alert('No exercises listed for today in your split.');
+
+  document.querySelectorAll('#workoutRows .workoutRowInput').forEach(r => {
+    const exVal = r.querySelector('.wEx').value.trim();
+    if (!exVal) r.remove();
+  });
+
+  list.forEach(ex => {
+    let cat = 'Chest';
+    const lower = ex.toLowerCase();
+    if (lower.includes('squat') || lower.includes('leg') || lower.includes('calf') || lower.includes('lunge') || lower.includes('deadlift')) cat = 'Legs';
+    else if (lower.includes('row') || lower.includes('pull') || lower.includes('lat') || lower.includes('bicep') || lower.includes('curl')) cat = 'Back';
+    else if (lower.includes('press') && (lower.includes('shoulder') || lower.includes('overhead') || lower.includes('lateral') || lower.includes('delt'))) cat = 'Shoulders';
+    else if (lower.includes('curl') || lower.includes('tricep') || lower.includes('dip') || lower.includes('extension')) cat = 'Arms';
+    else if (lower.includes('plank') || lower.includes('crunch') || lower.includes('ab')) cat = 'Core';
+    else if (lower.includes('run') || lower.includes('cycle') || lower.includes('cardio')) cat = 'Cardio';
+
+    addWorkoutRow({ exercise: ex, category: cat, weight: '', sets: 3, reps: 10 });
+  });
+}
+
 function openNotebookModal(id = null) {
   const modal = document.getElementById('notebookModal');
   const form = document.getElementById('notebookForm');
@@ -241,6 +387,9 @@ function openNotebookModal(id = null) {
     document.getElementById('notebookModalTitle').textContent = 'Log Journal & Workout';
     addWorkoutRow();
   }
+
+  document.getElementById('nbDate').onchange = updateNotebookSplitSuggest;
+  updateNotebookSplitSuggest();
   modal.classList.remove('hidden');
 }
 
@@ -393,6 +542,7 @@ function renderNotebook() {
           <div class="muted">Write daily reflections, log your day, and track workout weight progress over time.</div>
         </div>
         <div style="display:flex;gap:8px;flex-wrap:wrap">
+          <button class="btn secondary" onclick="openSplitModal()">⚙️ Weekly Split Routine</button>
           <button class="btn primary" onclick="openNotebookModal()">+ Log Entry</button>
         </div>
       </div>
@@ -595,8 +745,9 @@ document.getElementById('hFreq').onchange=e=>document.getElementById('hSchedule'
 document.getElementById('habitForm').onsubmit=e=>{e.preventDefault();let f=document.getElementById('hFreq').value,days=f==='daily'?DAYNUM:f==='weekdays'?[1,2,3,4,5]:f==='weekends'?[6,0]:[...document.querySelectorAll('#hDays input:checked')].map(x=>Number(x.value)),n=Number(document.getElementById('hCount').value);if(f==='custom'&&days.length!==n)return alert(`Select exactly ${n} days.`);state.habits.push({id:uid(),name:document.getElementById('hName').value.trim(),category:document.getElementById('hCat').value,frequency:f,days,target:Number(document.getElementById('hTarget').value)||1,reminder:document.getElementById('hReminder').value,createdAt:stamp()});save();document.getElementById('habitModal').classList.add('hidden');render()};
 document.getElementById('taskForm').onsubmit=e=>{e.preventDefault();let repeat=document.getElementById('tRepeat').checked,days=repeat?[...document.querySelectorAll('#tDays input:checked')].map(x=>Number(x.value)):[],n=Number(document.getElementById('tCount').value);if(repeat&&days.length!==n)return alert(`Select exactly ${n} days.`);state.tasks.push({id:uid(),name:document.getElementById('tName').value.trim(),date:document.getElementById('tDate').value,startDate:document.getElementById('tDate').value,repeat,days,priority:document.getElementById('tPriority').value,category:document.getElementById('tCat').value,createdAt:stamp()});save();document.getElementById('taskModal').classList.add('hidden');render()};
 document.getElementById('notebookForm').onsubmit=saveNotebookEntry;
-document.querySelectorAll('[data-close]').forEach(b=>b.onclick=()=>document.getElementById(b.dataset.close).classList.add('hidden'));document.getElementById('sideHabit').onclick=openHabit;document.getElementById('sideTask').onclick=openTask;document.getElementById('sideNotebook').onclick=()=>openNotebookModal();document.getElementById('topAdd').onclick=()=>{if(view==='notebook')openNotebookModal();else openHabit();};document.querySelectorAll('#nav button').forEach(b=>b.onclick=()=>{view=b.dataset.view;render()});document.getElementById('export').onclick=()=>{let a=document.createElement('a');a.href=URL.createObjectURL(new Blob([JSON.stringify(state,null,2)],{type:'application/json'}));a.download='habitflow-backup.json';a.click()};document.getElementById('reset').onclick=()=>{if(confirm('Reset all HabitFlow data?')){state={habits:[],tasks:[],notebookEntries:[],checks:{},taskChecks:{},checkTimes:{},taskCheckTimes:{}};save();render()}};
-window.openHabit=openHabit;window.openTask=openTask;window.toggleHabit=toggleHabit;window.toggleTask=toggleTask;window.deleteHabit=deleteHabit;window.deleteTask=deleteTask;window.trackerClick=trackerClick;window.scrollToTrackerToday=scrollToTrackerToday;window.openNotebookModal=openNotebookModal;window.addWorkoutRow=addWorkoutRow;window.deleteNotebookEntry=deleteNotebookEntry;window.setNotebookSubView=setNotebookSubView;window.onNotebookSearch=onNotebookSearch;initAuth();
+document.getElementById('splitForm').onsubmit=saveSplitConfig;
+document.querySelectorAll('[data-close]').forEach(b=>b.onclick=()=>document.getElementById(b.dataset.close).classList.add('hidden'));document.getElementById('sideHabit').onclick=openHabit;document.getElementById('sideTask').onclick=openTask;document.getElementById('sideNotebook').onclick=()=>openNotebookModal();document.getElementById('topAdd').onclick=()=>{if(view==='notebook')openNotebookModal();else openHabit();};document.querySelectorAll('#nav button').forEach(b=>b.onclick=()=>{view=b.dataset.view;render()});document.getElementById('export').onclick=()=>{let a=document.createElement('a');a.href=URL.createObjectURL(new Blob([JSON.stringify(state,null,2)],{type:'application/json'}));a.download='habitflow-backup.json';a.click()};document.getElementById('reset').onclick=()=>{if(confirm('Reset all HabitFlow data?')){state={habits:[],tasks:[],notebookEntries:[],workoutSplit:JSON.parse(JSON.stringify(DEFAULT_SPLIT)),checks:{},taskChecks:{},checkTimes:{},taskCheckTimes:{}};save();render()}};
+window.openHabit=openHabit;window.openTask=openTask;window.toggleHabit=toggleHabit;window.toggleTask=toggleTask;window.deleteHabit=deleteHabit;window.deleteTask=deleteTask;window.trackerClick=trackerClick;window.scrollToTrackerToday=scrollToTrackerToday;window.openNotebookModal=openNotebookModal;window.openSplitModal=openSplitModal;window.applySplitPreset=applySplitPreset;window.autoFillTodaySplit=autoFillTodaySplit;window.addWorkoutRow=addWorkoutRow;window.deleteNotebookEntry=deleteNotebookEntry;window.setNotebookSubView=setNotebookSubView;window.onNotebookSearch=onNotebookSearch;initAuth();
 </script>
 </body></html>
 
