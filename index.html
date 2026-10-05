@@ -120,18 +120,6 @@
         <input id="nbTitle" placeholder="e.g. Solid chest workout & hit personal best">
       </label>
 
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
-        <label>Body Weight
-          <input id="nbBodyWeight" type="number" step="0.1" min="0" placeholder="e.g. 74.5">
-        </label>
-        <label>Weight Unit
-          <select id="nbWeightUnit">
-            <option value="kg" selected>kg</option>
-            <option value="lbs">lbs</option>
-          </select>
-        </label>
-      </div>
-
       <label>Daily Journal / Reflections ("Write about your day")
         <textarea id="nbJournal" rows="4" style="width:100%;padding:11px 12px;border:1px solid #dfe2ea;border-radius:10px;font:inherit;outline:none;resize:vertical" placeholder="How did today go? Write about your day, reflections, wins, or thoughts..."></textarea>
       </label>
@@ -242,8 +230,6 @@ function openNotebookModal(id = null) {
       document.getElementById('nbDate').value = item.date || today();
       document.getElementById('nbMood').value = item.mood || '🙂 Good';
       document.getElementById('nbTitle').value = item.title || '';
-      document.getElementById('nbBodyWeight').value = (item.bodyWeight !== undefined && item.bodyWeight !== null) ? item.bodyWeight : '';
-      document.getElementById('nbWeightUnit').value = item.weightUnit || 'kg';
       document.getElementById('nbJournal').value = item.journal || '';
       if (item.workouts && item.workouts.length) {
         item.workouts.forEach(w => addWorkoutRow(w));
@@ -274,7 +260,7 @@ function addWorkoutRow(data = {}) {
       <option ${data.category === 'Cardio' ? 'selected' : ''}>Cardio</option>
       <option ${data.category === 'Other' ? 'selected' : ''}>Other</option>
     </select>
-    <input class="wWeight" type="number" step="0.5" placeholder="Weight" value="${data.weight !== undefined && data.weight !== null ? data.weight : ''}">
+    <input class="wWeight" type="number" step="0.5" placeholder="Weight (kg)" value="${data.weight !== undefined && data.weight !== null ? data.weight : ''}">
     <input class="wSets" type="number" min="1" placeholder="Sets" value="${data.sets !== undefined ? data.sets : '3'}">
     <input class="wReps" type="number" min="1" placeholder="Reps" value="${data.reps !== undefined ? data.reps : '10'}">
     <input class="wNotes" placeholder="Notes / Feeling" value="${esc(data.notes || '')}">
@@ -289,9 +275,6 @@ function saveNotebookEntry(e) {
   const date = document.getElementById('nbDate').value;
   const mood = document.getElementById('nbMood').value;
   const title = document.getElementById('nbTitle').value.trim();
-  const bodyWeightVal = document.getElementById('nbBodyWeight').value;
-  const bodyWeight = bodyWeightVal !== '' ? Number(bodyWeightVal) : null;
-  const weightUnit = document.getElementById('nbWeightUnit').value;
   const journal = document.getElementById('nbJournal').value.trim();
 
   const rows = [...document.querySelectorAll('#workoutRows .workoutRowInput')];
@@ -306,7 +289,7 @@ function saveNotebookEntry(e) {
       sets: Number(r.querySelector('.wSets').value || 1),
       reps: Number(r.querySelector('.wReps').value || 1),
       notes: r.querySelector('.wNotes').value.trim(),
-      unit: weightUnit
+      unit: 'kg'
     };
   }).filter(Boolean);
 
@@ -320,8 +303,6 @@ function saveNotebookEntry(e) {
         date,
         mood,
         title,
-        bodyWeight,
-        weightUnit,
         journal,
         workouts,
         updatedAt: stamp()
@@ -333,8 +314,6 @@ function saveNotebookEntry(e) {
       date,
       mood,
       title,
-      bodyWeight,
-      weightUnit,
       journal,
       workouts,
       createdAt: stamp(),
@@ -381,10 +360,6 @@ function renderNotebook() {
   });
 
   const totalEntries = entries.length;
-  const weights = entries.filter(e => e.bodyWeight !== null && e.bodyWeight !== undefined && e.bodyWeight > 0).map(e => ({ date: e.date, weight: Number(e.bodyWeight), unit: e.weightUnit || 'kg' }));
-  const latestWeightObj = weights[0];
-  const latestWeight = latestWeightObj ? `${latestWeightObj.weight} ${latestWeightObj.unit}` : '—';
-
   let totalWorkoutsCount = 0;
   const exerciseMap = {};
   entries.forEach(e => {
@@ -415,23 +390,18 @@ function renderNotebook() {
       <div class="head" style="flex-wrap:wrap;gap:14px">
         <div>
           <h2 style="font-size:24px;display:flex;align-items:center;gap:8px">📖 Notebook & Workout Tracker</h2>
-          <div class="muted">Write daily reflections, log your day, and track strength & body weight progress over time.</div>
+          <div class="muted">Write daily reflections, log your day, and track workout weight progress over time.</div>
         </div>
         <div style="display:flex;gap:8px;flex-wrap:wrap">
           <button class="btn primary" onclick="openNotebookModal()">+ Log Entry</button>
         </div>
       </div>
 
-      <div class="grid stats" style="margin-top:16px;margin-bottom:0">
+      <div class="grid stats" style="margin-top:16px;margin-bottom:0;grid-template-columns:repeat(3,1fr)">
         <div class="card" style="background:#fff">
           <div class="statLabel">Journal Entries</div>
           <div class="statValue">${totalEntries}</div>
           <div class="statSub">Days logged</div>
-        </div>
-        <div class="card" style="background:#fff">
-          <div class="statLabel">Latest Body Weight</div>
-          <div class="statValue">${latestWeight}</div>
-          <div class="statSub">${weights.length > 1 ? (weights[0].weight - weights[weights.length-1].weight >= 0 ? '+' : '') + (weights[0].weight - weights[weights.length-1].weight).toFixed(1) + ' ' + weights[0].unit + ' total' : 'Weight progress'}</div>
         </div>
         <div class="card" style="background:#fff">
           <div class="statLabel">Workouts Tracked</div>
@@ -458,7 +428,7 @@ function renderNotebook() {
     </div>
 
     ${notebookSubView === 'entries' ? renderNotebookEntriesView(filtered, prs) : ''}
-    ${notebookSubView === 'charts' ? renderNotebookChartsView(weights, exerciseMap) : ''}
+    ${notebookSubView === 'charts' ? renderNotebookChartsView(exerciseMap) : ''}
     ${notebookSubView === 'prs' ? renderNotebookPrsView(prs) : ''}
   `;
 }
@@ -471,7 +441,6 @@ function renderNotebookEntriesView(entries, prs) {
   return entries.map(e => {
     const formattedDate = dateObj(e.date).toLocaleDateString(undefined, { weekday: 'short', month: 'short', day: 'numeric', year: 'numeric' });
     const moodBadge = e.mood ? `<span class="nbMoodBadge">${esc(e.mood)}</span>` : '';
-    const weightBadge = (e.bodyWeight !== null && e.bodyWeight !== undefined && e.bodyWeight > 0) ? `<span class="nbWeightBadge">⚖️ ${e.bodyWeight} ${esc(e.weightUnit || 'kg')}</span>` : '';
 
     const workoutHtml = (e.workouts && e.workouts.length) ? `
       <div class="nbWorkoutSection">
@@ -502,7 +471,6 @@ function renderNotebookEntriesView(entries, prs) {
           <div class="nbDateTag">
             📅 ${formattedDate}
             ${moodBadge}
-            ${weightBadge}
           </div>
           <div style="display:flex;gap:6px">
             <button class="btn secondary" style="padding:5px 10px;font-size:12px" onclick="openNotebookModal('${e.id}')">Edit</button>
@@ -518,48 +486,14 @@ function renderNotebookEntriesView(entries, prs) {
   }).join('');
 }
 
-function renderNotebookChartsView(weights, exerciseMap) {
-  let weightSvg = '<div class="empty">Log your body weight in notebook entries to view weight trends over time!</div>';
-  if (weights.length >= 2) {
-    const sortedWeights = weights.slice().sort((a, b) => new Date(a.date) - new Date(b.date));
-    const W = 800, H = 160, p = 25;
-    const minW = Math.min(...sortedWeights.map(w => w.weight)) - 1;
-    const maxW = Math.max(...sortedWeights.map(w => w.weight)) + 1;
-    const pts = sortedWeights.map((w, i) => {
-      const x = p + (i / Math.max(1, sortedWeights.length - 1)) * (W - 2 * p);
-      const y = H - p - ((w.weight - minW) / Math.max(1, maxW - minW)) * (H - 2 * p);
-      return `${x},${y}`;
-    }).join(' ');
-
-    const circles = sortedWeights.map((w, i) => {
-      const x = p + (i / Math.max(1, sortedWeights.length - 1)) * (W - 2 * p);
-      const y = H - p - ((w.weight - minW) / Math.max(1, maxW - minW)) * (H - 2 * p);
-      return `<circle cx="${x}" cy="${y}" r="4" fill="#157b51"><title>${w.date}: ${w.weight} ${w.unit}</title></circle>`;
-    }).join('');
-
-    weightSvg = `
-      <div style="height:170px;background:#f9fbf9;border:1px solid #d4edd9;border-radius:12px;padding:10px;overflow:hidden">
-        <svg viewBox="0 0 ${W} ${H}" preserveAspectRatio="none" style="width:100%;height:100%">
-          <polyline points="${pts}" fill="none" stroke="#157b51" stroke-width="3"/>
-          ${circles}
-        </svg>
-      </div>
-      <div style="display:flex;justify-content:space-between;font-size:11px;color:var(--muted);margin-top:6px">
-        <span>${sortedWeights[0].date} (${sortedWeights[0].weight} ${sortedWeights[0].unit})</span>
-        <span>${sortedWeights[sortedWeights.length - 1].date} (${sortedWeights[sortedWeights.length - 1].weight} ${sortedWeights[sortedWeights.length - 1].unit})</span>
-      </div>
-    `;
-  } else if (weights.length === 1) {
-    weightSvg = `<div class="muted" style="padding:15px">1 body weight entry logged: <b>${weights[0].weight} ${weights[0].unit}</b> on ${weights[0].date}. Log more days to render trend line!</div>`;
-  }
-
+function renderNotebookChartsView(exerciseMap) {
   const exerciseNames = Object.keys(exerciseMap);
   let selectedEx = selectedChartExercise;
   if (selectedEx === 'all' || !exerciseMap[selectedEx]) {
     selectedEx = exerciseNames[0] || 'all';
   }
 
-  let exerciseSvg = '<div class="empty">No workout weight data available to display charts.</div>';
+  let exerciseSvg = '<div class="empty">No workout weight data available to display charts. Log your exercises to see progress!</div>';
   if (selectedEx !== 'all' && exerciseMap[selectedEx]) {
     const list = exerciseMap[selectedEx].slice().sort((a, b) => new Date(a.date) - new Date(b.date));
     if (list.length >= 2) {
@@ -596,31 +530,19 @@ function renderNotebookChartsView(weights, exerciseMap) {
   }
 
   return `
-    <div class="grid two">
-      <div class="card">
-        <div class="head">
-          <div>
-            <h2>⚖️ Body Weight Progress Trend</h2>
-            <div class="muted">History of logged body weight measurements</div>
-          </div>
+    <div class="card">
+      <div class="head">
+        <div>
+          <h2>🏋️ Exercise Weight Progression</h2>
+          <div class="muted">Select an exercise to track strength progress over time</div>
         </div>
-        ${weightSvg}
+        ${exerciseNames.length ? `
+          <select style="border:1px solid var(--line);padding:6px 10px;border-radius:8px;background:#fff;font-weight:700" onchange="selectedChartExercise=this.value;renderNotebook()">
+            ${exerciseNames.map(name => `<option value="${esc(name)}" ${name === selectedEx ? 'selected' : ''}>${esc(name)}</option>`).join('')}
+          </select>
+        ` : ''}
       </div>
-
-      <div class="card">
-        <div class="head">
-          <div>
-            <h2>🏋️ Exercise Weight Progression</h2>
-            <div class="muted">Select an exercise to track strength progress over time</div>
-          </div>
-          ${exerciseNames.length ? `
-            <select style="border:1px solid var(--line);padding:6px 10px;border-radius:8px;background:#fff;font-weight:700" onchange="selectedChartExercise=this.value;renderNotebook()">
-              ${exerciseNames.map(name => `<option value="${esc(name)}" ${name === selectedEx ? 'selected' : ''}>${esc(name)}</option>`).join('')}
-            </select>
-          ` : ''}
-        </div>
-        ${exerciseSvg}
-      </div>
+      ${exerciseSvg}
     </div>
   `;
 }
